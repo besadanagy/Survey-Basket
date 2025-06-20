@@ -1,5 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Survey_Basket.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
