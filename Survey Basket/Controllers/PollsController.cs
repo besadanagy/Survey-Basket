@@ -1,51 +1,61 @@
-﻿
-namespace Survey_Basket.Controllers
+﻿namespace Survey_Basket.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PollsController : ControllerBase
+    [Authorize]
+    public class PollsController(IPollService pollService) : ControllerBase
     {
-        private readonly IPollService PollService;
-
-        public PollsController(IPollService PollService)
-        {
-            this.PollService = PollService;
-        }
+        private readonly IPollService _pollService = pollService;
 
         [HttpGet("")]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            return PollService.GetAllPolls() is null ? NotFound() :Ok(PollService.GetAllPolls());
-        }
-        [Route("{id}")]
-        [HttpGet]
-        public IActionResult GetById(int id)
-        {
-            return PollService.GetPollById(id)is null?NotFound(): Ok(PollService.GetPollById(id));
-        }
-        [HttpPost]
-        public IActionResult Create(Poll poll)
-        {
-           var newpoll= PollService.CreatePoll(poll);
-            return CreatedAtAction(nameof(GetById),new {id=newpoll.Id},newpoll);
+            var result = await _pollService.GetAll();
+            return result.IsFailure
+                ? result.ToProblem(StatusCodes.Status404NotFound)
+                : Ok(result.Value);
         }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var result = await _pollService.GetById(id);
+            return result.IsFailure
+                ? result.ToProblem(StatusCodes.Status404NotFound)
+                : Ok(result.Value);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] PollRequest poll)
+        {
+            var userId = User.FindFirst("sub")?.Value ?? User.FindFirst("id")?.Value;
+
+            if (userId is null)
+                return Problem("User ID not found in token", statusCode: 401);
+
+            var result = await _pollService.Create(poll, userId);
+            return result.IsFailure
+                ? result.ToProblem(StatusCodes.Status403Forbidden)
+                : CreatedAtAction(nameof(GetById), new { id = result.Value.Id }, result.Value);
+        }
+
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Modify(int id, [FromBody] PollRequest poll)
+        {
+            var result = await _pollService.Update(id, poll);
+            return result.IsFailure
+                ? result.ToProblem(StatusCodes.Status400BadRequest)
+                : Ok("Updated Done");
+        }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            if (PollService.GetPollById(id) is null)
-                return NotFound();
-            PollService.DeletePoll(id);
-            return  Ok("Deleted Done");
+            var result = await _pollService.Delete(id);
+            return result.IsFailure
+                ? result.ToProblem(StatusCodes.Status404NotFound)
+                : Ok("Deleted Done");
         }
-        [HttpPut]
-        public IActionResult Modify(Poll Poll)
-        {
-            PollService.UpdatePoll(Poll);
-            return Ok(PollService.GetPollById(Poll.Id));
-        }
-
-
     }
 }

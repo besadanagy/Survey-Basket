@@ -2,16 +2,10 @@
 var builder = WebApplication.CreateBuilder(args);
 
 
-builder.Services.AddScoped<IPollService, PollService>();
-builder.Services.AddDbContext<EntityContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDependancies(builder.Configuration);
 
-
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+//builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
+//            .AddEntityFrameworkStores<EntityContext>();
 
 var app = builder.Build();
 
@@ -21,11 +15,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
 app.UseHttpsRedirection();
-
+//app.MapIdentityApi<ApplicationUser>();
+app.UseCors("FirstPolicy");
+app.UseAuthentication(); 
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

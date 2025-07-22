@@ -1,7 +1,28 @@
-﻿global using Microsoft.AspNetCore.Http;
-global using Microsoft.AspNetCore.Mvc;
-
+﻿global using Microsoft.AspNetCore.Mvc;
 global using Survey_Basket.Model;
 global using Survey_Basket.Repository;
 global using Microsoft.EntityFrameworkCore;
 global using Survey_Basket.Services;
+global using Mapster;
+global using FluentValidation;
+global using FluentValidation.AspNetCore;
+global using MapsterMapper;
+global using Survey_Basket;
+global using System.Reflection;
+global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+global using Survey_Basket.Contracts.Polls;
+global using Survey_Basket.Contracts.Authentication;
+global using Microsoft.AspNetCore.Identity;
+global using Microsoft.EntityFrameworkCore.Metadata.Builders;
+global using Microsoft.Extensions.Options;
+global using Microsoft.IdentityModel.Tokens;
+global using System.IdentityModel.Tokens.Jwt;
+global  using System.Security.Claims;
+global using System.Text;
+global using Microsoft.AspNetCore.Authentication.JwtBearer;
+global using Survey_Basket.Abstractions;
+global using OneOf;
+global using Survey_Basket.Errors;
+global using System.Security.Cryptography;
+global using Microsoft.AspNetCore.Authorization;
+

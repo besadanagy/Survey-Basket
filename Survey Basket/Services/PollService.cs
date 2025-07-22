@@ -1,5 +1,4 @@
-﻿
-namespace Survey_Basket.Services
+﻿namespace Survey_Basket.Services
 {
     public class PollService:IPollService
     {
@@ -9,57 +8,81 @@ namespace Survey_Basket.Services
         {
             _context = context;
         }
-
-        // CREATE
-        public Poll CreatePoll(Poll poll)
-        {
-            var Poll = new Poll
-            {
-                
-                Title = poll.Title,
-                Description = poll.Description
-            };
-            _context.Polls.Add(Poll);
-            _context.SaveChanges();
-            return Poll;
-        }
-
         // READ ALL
-        public List<Poll> GetAllPolls()
+        public async Task<Result<List<PollResponse>>> GetAll()
         {
-            return _context.Polls.ToList();
+            var polls = await _context.Polls.ToListAsync();
+            return polls is null ?
+               Result.Failure<List<PollResponse>>(PollErorrs.PollNotFound) :
+                Result.Success(polls.Adapt<List<PollResponse>>());
+        }
+        // READ BY ID
+        public async Task<Result<PollResponse>> GetById(int id)
+        {
+            var poll = await _context.Polls.FirstOrDefaultAsync(p => p.Id == id);
+            return poll is null ?
+              Result.Failure<PollResponse>(PollErorrs.PollNotFound) :
+               Result.Success(poll.Adapt<PollResponse>());
+        }
+        // CREATE
+        public async Task<Result<PollResponse>> Create(PollRequest poll, string userId)
+        {
+            if (poll is null)
+                return Result.Failure<PollResponse>(PollErorrs.PollNotFound);
+
+            var entity = new Poll
+            {
+                Title = poll.Title,
+                Description = poll.Description,
+                StartsAt = poll.StartsAt,
+                EndsAt = poll.EndsAt,
+                CreatedById = userId
+            };
+
+            await _context.Polls.AddAsync(entity);
+            await _context.SaveChangesAsync();
+
+            return Result.Success(entity.Adapt<PollResponse>());
         }
 
-        // READ BY ID
-        public Poll GetPollById(int id)
-        {
-            return _context.Polls.FirstOrDefault(p => p.Id == id);
-        }
+
+
 
         // UPDATE
-        public bool UpdatePoll(Poll NewPoll)
+        public async Task<Result<PollResponse>> Update(int id, PollRequest newPoll)
         {
-            var OldPoll = GetPollById(NewPoll.Id);
-            if (NewPoll == null)
-                return false;
+            if (newPoll is null)
+                return Result.Failure<PollResponse>(PollErorrs.PollNotFound);
 
-            OldPoll.Title = NewPoll.Title;
-            OldPoll.Description = NewPoll.Description;
-            _context.SaveChanges();
-            return true;
+            var oldPoll = await _context.Polls.FindAsync(id);
+            if (oldPoll is null)
+                return Result.Failure<PollResponse>(PollErorrs.PollNotFound);
+
+            oldPoll.Title = newPoll.Title;
+            oldPoll.Description = newPoll.Description;
+            oldPoll.StartsAt = newPoll.StartsAt;
+            oldPoll.EndsAt = newPoll.EndsAt;
+
+            await _context.SaveChangesAsync();
+
+            return Result.Success(oldPoll.Adapt<PollResponse>());
         }
 
         // DELETE
-        public bool DeletePoll(int id)
+        public async Task<Result> Delete(int id)
         {
-            var Poll = GetPollById(id);
-            if (Poll == null)
-                return false;
+            var poll = await _context.Polls.FindAsync(id);
 
-            _context.Polls.Remove(Poll);
-            _context.SaveChanges();
-            return true;
+            if (poll is null)
+                return Result.Failure(PollErorrs.PollNotFound);
+
+            _context.Polls.Remove(poll);
+            await _context.SaveChangesAsync();
+
+            return Result.Success();
         }
+
+       
     }
 }
 

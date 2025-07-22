@@ -1,13 +1,12 @@
-﻿
-namespace Survey_Basket.Repository
+﻿namespace Survey_Basket.Repository
 {
     public interface IPollService
     {
-        public Poll CreatePoll(Poll poll);
-        public List<Poll> GetAllPolls();
-        public Poll GetPollById(int id);
-        public bool UpdatePoll(Poll NewPoll);
-        public bool DeletePoll(int id);
+        Task<Result<List<PollResponse>>> GetAll();
+        Task<Result<PollResponse>> GetById(int id);
+        Task<Result<PollResponse>> Create(PollRequest poll, string userId);
+        Task<Result<PollResponse>> Update(int Id,PollRequest NewPoll);
+        Task<Result> Delete(int id);
 
     }
 }
