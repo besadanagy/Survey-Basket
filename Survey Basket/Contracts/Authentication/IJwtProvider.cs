@@ -2,7 +2,7 @@
 {
     public interface IJwtProvider
     {
-        public (string token,int expireIn) GenerateToken(ApplicationUser applicationUser);
+        public (string token,int expireIn) GenerateToken(ApplicationUser applicationUser, IEnumerable<string> roles, IEnumerable<string> permissions);
     string? ValidateToken(string token);
     }
 }

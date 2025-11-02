@@ -1,4 +1,5 @@
-﻿namespace Survey_Basket.Abstractions
+﻿
+namespace Survey_Basket.Abstractions
 {
     public class Result
     {
